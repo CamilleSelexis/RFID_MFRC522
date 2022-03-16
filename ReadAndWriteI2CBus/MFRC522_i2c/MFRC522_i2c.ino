@@ -3,10 +3,10 @@
 
 #define RST_PIN 5 // Arduino Mega Pin
 
-int ac = 0;
+int ac = 0; //current chip
 
-const uint8_t I2C_ADDR1 = 0x35;
-const uint8_t I2C_ADDR2 = 0x2f;
+const uint8_t I2C_ADDR1 = 0x20;
+const uint8_t I2C_ADDR2 = 0x3F;
 
 // 0x28 is i2c address on SDA. Check your address with i2cscanner if not match.
 MFRC522_I2C mfrc522[2] = {
@@ -18,8 +18,10 @@ void setup() {
   Serial.begin(115200);           // Initialize serial communications with the PC
   Wire.begin();                   // Initialize I2C
   mfrc522[0].PCD_Init();           // Init first instance of mfrc522
+  Serial.println("chip 0 initialised");
   mfrc522[1].PCD_Init();            // Init second instance of mfrc522
-  ShowReaderDetails();            // Show details of PCD - mfrc522 Card Reader details
+  ShowReaderDetails(0);            // Show details of PCD - mfrc522 Card Reader details
+  ShowReaderDetails(1);
   Serial.println(F("Scan PICC to see UID, type, and data blocks..."));
 
   Serial.println(F("Scan a MIFARE Ultralight PICC to demonstrate read and write."));
@@ -135,16 +137,16 @@ void loop() {
     Serial.println();
 
     // Halt PICC
-    mfrc522[ac].PICC_HaltA();
+    //mfrc522[ac].PICC_HaltA();
     // Stop encryption on PCD
     mfrc522[ac].PCD_StopCrypto1();
   // Dump debug info about the card; PICC_HaltA() is automatically called
   //mfrc522[ac].PICC_DumpToSerial(&(mfrc522[ac].uid));
 }
 
-void ShowReaderDetails() {
+void ShowReaderDetails(int cc) {
   // Get the mfrc522[ac][ac] software version
-  byte v = mfrc522[ac].PCD_ReadRegister(mfrc522[ac].VersionReg);
+  byte v = mfrc522[cc].PCD_ReadRegister(mfrc522[cc].VersionReg);
   Serial.print(F("mfrc522[ac][ac] Software Version: 0x"));
   Serial.print(v, HEX);
   if (v == 0x91)
