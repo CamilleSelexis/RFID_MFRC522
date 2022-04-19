@@ -15,11 +15,13 @@ MFRC522_I2C mfrc522[2] = {
   };
 
 void setup() {
+  pinMode(RST_PIN,OUTPUT);
+  //digitalWrite(RST_PIN,HIGH);
   Serial.begin(115200);           // Initialize serial communications with the PC
   Wire.begin();                   // Initialize I2C
   mfrc522[0].PCD_Init();           // Init first instance of mfrc522
   Serial.println("chip 0 initialised");
-  mfrc522[1].PCD_Init();            // Init second instance of mfrc522
+  //mfrc522[1].PCD_Init();            // Init second instance of mfrc522
   ShowReaderDetails(0);            // Show details of PCD - mfrc522 Card Reader details
   ShowReaderDetails(1);
   Serial.println(F("Scan PICC to see UID, type, and data blocks..."));
