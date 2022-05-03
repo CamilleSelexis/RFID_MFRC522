@@ -1,29 +1,51 @@
 #include <Wire.h>
 #include "MFRC522_I2C.h"
+#include "Arduino.h"
 
-#define RST_PIN 5 // Arduino Mega Pin
+#define RST_PIN 5 // Arduino Portenta Pin
 
 int ac = 0; //current chip
 
-const uint8_t I2C_ADDR1 = 0x20;
-const uint8_t I2C_ADDR2 = 0x3F;
+//const uint8_t I2C_ADDR1 = 0x04;
+//const uint8_t I2C_ADDR2 = 0x18;
+//const uint8_t I2C_ADDR3 = 0x38;
+//const uint8_t I2C_ADDR4 = 0x3F;
+
+const uint8_t I2C_ADDR1 = 0x10;
+const uint8_t I2C_ADDR2 = 0x10;
+const uint8_t I2C_ADDR3 = 0x10;
+const uint8_t I2C_ADDR4 = 0x10;
 
 // 0x28 is i2c address on SDA. Check your address with i2cscanner if not match.
-MFRC522_I2C mfrc522[2] = {
+MFRC522_I2C mfrc522[4] = {
   MFRC522_I2C(I2C_ADDR1, RST_PIN),   // Create mfrc522 instance.
-  MFRC522_I2C(I2C_ADDR2, RST_PIN)
+  MFRC522_I2C(I2C_ADDR2, RST_PIN),
+  MFRC522_I2C(I2C_ADDR3, RST_PIN),
+  MFRC522_I2C(I2C_ADDR4, RST_PIN)
   };
 
 void setup() {
   pinMode(RST_PIN,OUTPUT);
-  //digitalWrite(RST_PIN,HIGH);
+  digitalWrite(RST_PIN,LOW);
+  delay(100);
+  digitalWrite(RST_PIN,HIGH);
   Serial.begin(115200);           // Initialize serial communications with the PC
+  while(!Serial);
   Wire.begin();                   // Initialize I2C
+  scan_i2c();
   mfrc522[0].PCD_Init();           // Init first instance of mfrc522
-  Serial.println("chip 0 initialised");
-  //mfrc522[1].PCD_Init();            // Init second instance of mfrc522
+  delay(100);
+  mfrc522[1].PCD_Init();            // Init second instance of mfrc522
+  delay(100);
+  mfrc522[3].PCD_Init();            // Init Third instance of mfrc522
+  delay(100);
+  mfrc522[1].PCD_Init();            // Init Fourth instance of mfrc522
+  delay(100);
   ShowReaderDetails(0);            // Show details of PCD - mfrc522 Card Reader details
   ShowReaderDetails(1);
+  //mfrc522[1].PCD_WriteRegister(0x16,0x16);
+  //Serial.println(mfrc522[0].PCD_ReadRegister(0x16));
+  //Serial.println(mfrc522[1].PCD_ReadRegister(0x16));
   Serial.println(F("Scan PICC to see UID, type, and data blocks..."));
 
   Serial.println(F("Scan a MIFARE Ultralight PICC to demonstrate read and write."));
@@ -35,14 +57,24 @@ void setup() {
 
 void loop() {
   // Look for new cards, and select one if present
+
   if (mfrc522[0].PICC_IsNewCardPresent()&&mfrc522[0].PICC_ReadCardSerial()) {
     ac = 0;
   }
   else if (mfrc522[1].PICC_IsNewCardPresent()&&mfrc522[1].PICC_ReadCardSerial()) {
     ac = 1;
   }
+    else if (mfrc522[2].PICC_IsNewCardPresent()&&mfrc522[2].PICC_ReadCardSerial()) {
+    ac = 2;
+  }
+    else if (mfrc522[3].PICC_IsNewCardPresent()&&mfrc522[3].PICC_ReadCardSerial()) {
+    ac = 3;
+  }
   else{
-    delay(50);
+    digitalWrite(LED_BUILTIN,LOW);
+    delay(250);
+    digitalWrite(LED_BUILTIN,HIGH);
+    delay(250);
     return;
   }  
   // Now a card is selected. The UID and SAK is in mfrc522[ac][ac].uid.
@@ -139,7 +171,7 @@ void loop() {
     Serial.println();
 
     // Halt PICC
-    //mfrc522[ac].PICC_HaltA();
+    mfrc522[ac].PICC_HaltA();
     // Stop encryption on PCD
     mfrc522[ac].PCD_StopCrypto1();
   // Dump debug info about the card; PICC_HaltA() is automatically called
