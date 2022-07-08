@@ -2,8 +2,11 @@
 #include "MFRC522_I2C.h"
 #include "Arduino.h"
 
-#define RST_PIN 5 // Arduino Portenta Pin
-
+#define RST_PIN 13 // Reset Pin
+// Pin for  SDA // SCL
+// Mega     20  // 21
+// Nano     23  // 24
+// Portenta 11  // 12
 int ac = 0; //current chip
 
 //const uint8_t I2C_ADDR1 = 0x04;
@@ -11,10 +14,11 @@ int ac = 0; //current chip
 //const uint8_t I2C_ADDR3 = 0x38;
 //const uint8_t I2C_ADDR4 = 0x3F;
 
-const uint8_t I2C_ADDR1 = 0x10;
-const uint8_t I2C_ADDR2 = 0x10;
-const uint8_t I2C_ADDR3 = 0x10;
-const uint8_t I2C_ADDR4 = 0x10;
+const uint8_t I2C_ADDR1 = 0x18;
+const uint8_t I2C_ADDR2 = 0x18;
+const uint8_t I2C_ADDR3 = 0x31;
+const uint8_t I2C_ADDR4 = 0x38;
+//const uint8_t I2C_ADDR4 = 0x10;
 
 // 0x28 is i2c address on SDA. Check your address with i2cscanner if not match.
 MFRC522_I2C mfrc522[4] = {
@@ -37,15 +41,14 @@ void setup() {
   delay(100);
   mfrc522[1].PCD_Init();            // Init second instance of mfrc522
   delay(100);
-  mfrc522[3].PCD_Init();            // Init Third instance of mfrc522
+  mfrc522[2].PCD_Init();            // Init Third instance of mfrc522
   delay(100);
-  mfrc522[1].PCD_Init();            // Init Fourth instance of mfrc522
+  mfrc522[3].PCD_Init();            // Init Fourth instance of mfrc522
   delay(100);
   ShowReaderDetails(0);            // Show details of PCD - mfrc522 Card Reader details
   ShowReaderDetails(1);
-  //mfrc522[1].PCD_WriteRegister(0x16,0x16);
-  //Serial.println(mfrc522[0].PCD_ReadRegister(0x16));
-  //Serial.println(mfrc522[1].PCD_ReadRegister(0x16));
+  ShowReaderDetails(2);
+  ShowReaderDetails(3);
   Serial.println(F("Scan PICC to see UID, type, and data blocks..."));
 
   Serial.println(F("Scan a MIFARE Ultralight PICC to demonstrate read and write."));
@@ -75,6 +78,7 @@ void loop() {
     delay(250);
     digitalWrite(LED_BUILTIN,HIGH);
     delay(250);
+    Serial.println("Waiting...");
     return;
   }  
   // Now a card is selected. The UID and SAK is in mfrc522[ac][ac].uid.
